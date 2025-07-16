@@ -33,11 +33,7 @@ jobs:
           REPLICAS: ${{ vars.REPLICAS }}
           IMAGE: ${{ vars.DOCKER_USERNAME }}/solar-system:${{ inputs.image_tag }}
         run: |
-          envsubst < kubernetes/${{ inputs.environment }} > deployment-rendered.yaml
-
-      - name: Deploy to Kubernetes
-        run: |
-          kubectl apply -f deployment-rendered.yaml
+          kubectl apply -f kubernetes/${{ inputs.environment }}
 
       - name: Get Service Endpoint
         id: set-output
