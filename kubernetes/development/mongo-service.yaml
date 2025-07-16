@@ -1,0 +1,11 @@
+      - name: Create mongo-db-creds Secret
+        env:
+          NAMESPACE: ${{ vars.NAMESPACE }}
+          MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+        run: |
+          kubectl delete secret mongo-db-creds -n "$NAMESPACE" --ignore-not-found
+          kubectl create secret generic mongo-db-creds \
+            --from-literal=MONGO_USERNAME="$MONGO_USERNAME" \
+            --from-literal=MONGO_PASSWORD="$MONGO_PASSWORD" \
+            -n "$NAMESPACE"

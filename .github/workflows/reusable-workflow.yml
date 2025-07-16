@@ -9,6 +9,12 @@ on:
       image_tag:
         required: true
         type: string
+      MONGO_USERNAME:
+        required: true
+        type: string
+      MONGO_PASSWORD:
+        required: true
+        type: string
     secrets:
       KUBECONFIG:
         required: true
