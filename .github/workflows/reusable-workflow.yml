@@ -58,6 +58,10 @@ jobs:
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
+          kubectl create secret generic mongo-db-creds \
+          --from-literal=MONGO_USERNAME="$MONGO_USERNAME" \
+          --from-literal=MONGO_PASSWORD="$MONGO_PASSWORD" \
+          -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f rendered-deployment.yaml -n "$NAMESPACE"
           kubectl apply -f rendered-service.yaml -n "$NAMESPACE"
           kubectl apply -f rendered-ingress.yaml -n "$NAMESPACE"
@@ -67,6 +71,10 @@ jobs:
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
-          ENDPOINT=$(kubectl get svc solar-system -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-          echo "endpoint=$ENDPOINT" >> $GITHUB_OUTPUT
+          NODE_IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[?(@.type=='InternalIP')].address}")
+          NODE_PORT=$(kubectl get svc solar-system -n "$NAMESPACE" -o jsonpath='{.spec.ports[0].nodePort}')
+          FULL_URL="http://$NODE_IP:$NODE_PORT"
+          echo "Application is accessible at: $FULL_URL"
+          echo "endpoint=$FULL_URL" >> $GITHUB_OUTPUT
+
 
