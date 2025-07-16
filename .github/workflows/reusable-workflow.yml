@@ -16,7 +16,7 @@ on:
 jobs:
   deploy:
     name: Deploy to ${{ inputs.environment }}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted 
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout Repository
@@ -36,3 +36,5 @@ jobs:
         run: |
           kubectl apply -f k8s/${{ inputs.environment }}/deployment.yaml
           kubectl set image deployment/my-app my-app=my-app:${{ inputs.image_tag }} -n default
+        
+          
