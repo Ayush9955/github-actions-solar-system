@@ -36,6 +36,6 @@ jobs:
         run: |
           pwd
           ls
-          kubectl apply -f k8s/${{ inputs.environment }}/deployment.yaml
+          kubectl apply -f kubernetes/${{ inputs.environment }}/deployment.yaml
           kubectl set image deployment/my-app my-app=my-app:${{ inputs.image_tag }} -n default
         
