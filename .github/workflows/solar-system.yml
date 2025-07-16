@@ -78,7 +78,7 @@ jobs:
         environment: development
         image_tag: ${{ github.sha }}
       secrets:
-        KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
+        KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
     deploy-prod:
       needs: [unit-testing, code-coverage]
@@ -88,5 +88,5 @@ jobs:
         environment: production
         image_tag: ${{ github.sha }}
       secrets:
-        KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
+        KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
