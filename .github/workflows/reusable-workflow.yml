@@ -18,8 +18,6 @@ jobs:
     name: Deploy to ${{ inputs.environment }}
     runs-on: dev
     environment: ${{ inputs.environment }}
-    outputs:
-      endpoint: ${{ steps.set-output.outputs.endpoint }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -29,17 +27,13 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Set up kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
-
       - name: Template deployment manifest
+        env:
+          NAMESPACE: ${{ vars.NAMESPACE }}
+          REPLICAS: ${{ vars.REPLICAS }}
+          IMAGE: ${{ vars.DOCKER_USERNAME }}/solar-system:${{ inputs.image_tag }}
         run: |
-          export NAMESPACE=${{ inputs.environment }}
-          export REPLICAS=2
-          export IMAGE=my-app:${{ inputs.image_tag }}
-          envsubst < kubernetes/${{ inputs.environment }}/deployment.yaml > deployment-rendered.yaml
+          envsubst < kubernetes/${{ inputs.environment }} > deployment-rendered.yaml
 
       - name: Deploy to Kubernetes
         run: |
@@ -48,6 +42,6 @@ jobs:
       - name: Get Service Endpoint
         id: set-output
         run: |
-          ENDPOINT=$(kubectl get svc solar-system -n ${{ inputs.environment }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          ENDPOINT=$(kubectl get svc solar-system -n ${{ vars.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           echo "endpoint=$ENDPOINT" >> $GITHUB_OUTPUT
 

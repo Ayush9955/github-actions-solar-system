@@ -111,7 +111,7 @@ jobs:
             wget -q -O - --timeout=10 --tries=3 http://$IP:3000/live | grep live 
 
     deploy-dev:
-      needs: [unit-testing, code-coverage]
+      needs: [docker]
       uses: ./.github/workflows/reusable-workflow.yml
       with:
         environment: development
@@ -120,7 +120,7 @@ jobs:
         KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
     deploy-prod:
-      needs: [unit-testing, code-coverage]
+      needs: [docker]
       if: github.ref == 'refs/heads/main'
       uses: ./.github/workflows/reusable-workflow.yml
       with:
