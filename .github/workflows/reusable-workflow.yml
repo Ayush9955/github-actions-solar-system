@@ -27,13 +27,15 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Set up kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+      # - name: Set up kubeconfig
+      #   run: |
+      #     mkdir -p ~/.kube
+      #     echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
 
       - name: Deploy to Kubernetes
         run: |
+          pwd
+          ls
           kubectl apply -f k8s/${{ inputs.environment }}/deployment.yaml
           kubectl set image deployment/my-app my-app=my-app:${{ inputs.image_tag }} -n default
         
