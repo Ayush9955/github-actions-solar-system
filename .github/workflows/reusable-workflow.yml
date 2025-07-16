@@ -1,11 +1,38 @@
-name: Testing - Reusable Workflow
-on: 
+name: Reusable Kubernetes Deploy
+
+on:
   workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+    secrets:
+      KUBECONFIG:
+        required: true
+
 jobs:
-  integration-test:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
-      - env:
-          URL: '${{ needs.dev-deploy.outputs.APP_INGRESS_URL }}'
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      - name: Set up kubeconfig
         run: |
-          curl https://$URL/live -s -k | jq -r .status | grep -i live
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/${{ inputs.environment }}/deployment.yaml
+          kubectl set image deployment/my-app my-app=my-app:${{ inputs.image_tag }} -n default

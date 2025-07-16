@@ -71,4 +71,24 @@ jobs:
             name: Code-Coverage-Result
             path: coverage
             retention-days: 5
+    deploy-dev:
+      runs-on: self-hosted
+      needs: [unit-testing, code-coverage]
+      uses: ./.github/workflows/reusable-k8s-deploy.yml
+      with:
+        environment: development
+        image_tag: ${{ github.sha }}
+      secrets:
+        KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
+
+    deploy-prod:
+      runs-on: self-hosted
+      needs: [unit-testing, code-coverage]
+      if: github.ref == 'refs/heads/main'
+      uses: ./.github/workflows/reusable-k8s-deploy.yml
+      with:
+        environment: production
+        image_tag: ${{ github.sha }}
+      secrets:
+        KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
 
