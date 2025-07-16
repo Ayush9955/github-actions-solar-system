@@ -117,9 +117,9 @@ jobs:
         environment: development
         image_tag: ${{ github.sha }}
         MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+        MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
       secrets:
         KUBECONFIG: ${{ secrets.KUBECONFIG }}
-        MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
     deploy-prod:
       needs: [docker]
@@ -129,7 +129,14 @@ jobs:
         environment: production
         image_tag: ${{ github.sha }}
         MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+        MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
       secrets:
         KUBECONFIG: ${{ secrets.KUBECONFIG }}
-        MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+
+    print-endpoint:
+      needs: deploy-dev
+      runs-on: ubuntu-latest
+      steps:
+        - name: Print Service Endpoint
+          run: echo "Endpoint: ${{ needs.deploy-dev.outputs.endpoint }}"
 

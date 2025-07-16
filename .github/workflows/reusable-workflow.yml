@@ -12,18 +12,18 @@ on:
       MONGO_USERNAME:
         required: true
         type: string
-      MONGO_PASSWORD:
-        required: true
-        type: string
     secrets:
       KUBECONFIG:
+        required: true
+      MONGO_PASSWORD:
         required: true
 
 jobs:
   deploy:
-    name: Deploy to ${{ inputs.environment }}
     runs-on: dev
     environment: ${{ inputs.environment }}
+    outputs:
+      endpoint: ${{ steps.set-output.outputs.endpoint }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
