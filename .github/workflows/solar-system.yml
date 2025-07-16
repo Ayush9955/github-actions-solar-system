@@ -9,8 +9,8 @@ on:
 
 env:
   MONGO_URI: ‘mongodb+srv://supercluster.d83jj.mongodb.net/superData'
-  MONGO_USERNAME: superuser
-  MONGO_PASSWORD: SuperPassword
+  MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+  MONGO_PASSWORD: ${{ secrets.Mongo_PASSWORD }}
     
 jobs:
     unit-testing:
@@ -29,7 +29,7 @@ jobs:
         - name: Setup NodeJS Version
           uses: actions/setup-node@v4
           with:
-            node-version: 20
+            node-version: 18
         - name: Cache NPM Dependencies
           uses: actions/cache@v4
           with:
