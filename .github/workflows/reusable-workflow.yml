@@ -80,6 +80,6 @@ jobs:
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
-          FULL_URL="http://solar-system-${NAMESPACE}.${{ env.INGRESS_IP }}.nip.io"
+          FULL_URL="http://solar-system-${NAMESPACE}.${{ env.INGRESS_IP }}.nip.io:32209"
           echo "Application URL: $FULL_URL"
           echo "endpoint=$FULL_URL" >> $GITHUB_OUTPUT
