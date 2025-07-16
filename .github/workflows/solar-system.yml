@@ -20,6 +20,12 @@ jobs:
         - name: Checkout Repository
           uses: actions/checkout@v4
 
+        - name: Print Environment Variables
+          run: |
+            echo "MONGO_URI: $MONGO_URI"
+            echo "MONGO_USERNAME: $MONGO_USERNAME"
+            echo "MONGO_PASSWORD: $MONGO_PASSWORD"
+
         - name: Setup NodeJS Version
           uses: actions/setup-node@v4
           with:
