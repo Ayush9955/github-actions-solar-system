@@ -116,8 +116,10 @@ jobs:
       with:
         environment: development
         image_tag: ${{ github.sha }}
+        MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
       secrets:
         KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
     deploy-prod:
       needs: [docker]
@@ -126,6 +128,8 @@ jobs:
       with:
         environment: production
         image_tag: ${{ github.sha }}
+        MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
       secrets:
         KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
