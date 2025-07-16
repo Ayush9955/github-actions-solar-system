@@ -27,17 +27,40 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Template deployment manifest
+      # - name: Set up kubeconfig
+      #   run: |
+      #     mkdir -p ~/.kube
+      #     echo "secrets.KUBECONFIG" > ~/.kube/config
+
+      - name: Template manifests
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
           REPLICAS: ${{ vars.REPLICAS }}
           IMAGE: ${{ vars.DOCKER_USERNAME }}/solar-system:${{ inputs.image_tag }}
         run: |
-          kubectl apply -f kubernetes/${{ inputs.environment }}
+          for f in kubernetes/${{ inputs.environment }}/*.yaml; do
+            envsubst < "$f" > "rendered-$(basename $f)"
+          done
+
+      - name: Create namespace if not exists
+        env:
+          NAMESPACE: ${{ vars.NAMESPACE }}
+        run: |
+          kubectl get namespace "$NAMESPACE" || kubectl create namespace "$NAMESPACE"
+
+      - name: Deploy to Kubernetes
+        env:
+          NAMESPACE: ${{ vars.NAMESPACE }}
+        run: |
+          kubectl apply -f rendered-deployment.yaml -n "$NAMESPACE"
+          kubectl apply -f rendered-service.yaml -n "$NAMESPACE"
+          kubectl apply -f rendered-ingress.yaml -n "$NAMESPACE"
 
       - name: Get Service Endpoint
         id: set-output
+        env:
+          NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
-          ENDPOINT=$(kubectl get svc solar-system -n ${{ vars.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          ENDPOINT=$(kubectl get svc solar-system -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           echo "endpoint=$ENDPOINT" >> $GITHUB_OUTPUT
 
