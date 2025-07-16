@@ -33,16 +33,23 @@ jobs:
         with:
           version: 'latest'
 
-      # - name: Set up kubeconfig
-      #   run: |
-      #     mkdir -p ~/.kube
-      #     echo "secrets.KUBECONFIG" > ~/.kube/config
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
+      - name: Get Ingress IP (from first node)
+        id: ingress-ip
+        run: |
+          IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[?(@.type=='InternalIP')].address}")
+          echo "INGRESS_IP=$IP" >> $GITHUB_ENV
 
       - name: Template manifests
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
           REPLICAS: ${{ vars.REPLICAS }}
           IMAGE: ${{ vars.DOCKER_USERNAME }}/solar-system:${{ inputs.image_tag }}
+          INGRESS_IP: ${{ env.INGRESS_IP }}
         run: |
           for f in kubernetes/${{ inputs.environment }}/*.yaml; do
             envsubst < "$f" > "rendered-$(basename $f)"
@@ -57,11 +64,13 @@ jobs:
       - name: Deploy to Kubernetes
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
+          MONGO_USERNAME: ${{ inputs.MONGO_USERNAME }}
+          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
         run: |
           kubectl create secret generic mongo-db-creds \
-          --from-literal=MONGO_USERNAME="$MONGO_USERNAME" \
-          --from-literal=MONGO_PASSWORD="$MONGO_PASSWORD" \
-          -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+            --from-literal=MONGO_USERNAME="$MONGO_USERNAME" \
+            --from-literal=MONGO_PASSWORD="$MONGO_PASSWORD" \
+            -n "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f rendered-deployment.yaml -n "$NAMESPACE"
           kubectl apply -f rendered-service.yaml -n "$NAMESPACE"
           kubectl apply -f rendered-ingress.yaml -n "$NAMESPACE"
@@ -71,10 +80,6 @@ jobs:
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
-          NODE_IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[?(@.type=='InternalIP')].address}")
-          NODE_PORT=$(kubectl get svc solar-system -n "$NAMESPACE" -o jsonpath='{.spec.ports[0].nodePort}')
-          FULL_URL="http://$NODE_IP:$NODE_PORT"
-          echo "Application is accessible at: $FULL_URL"
+          FULL_URL="http://solar-system-${NAMESPACE}.${{ env.INGRESS_IP }}.nip.io"
+          echo "Application URL: $FULL_URL"
           echo "endpoint=$FULL_URL" >> $GITHUB_OUTPUT
-
-
