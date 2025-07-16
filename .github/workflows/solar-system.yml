@@ -73,7 +73,7 @@ jobs:
             retention-days: 5
     deploy-dev:
       needs: [unit-testing, code-coverage]
-      uses: ./.github/workflows/reusable-k8s-deploy.yml
+      uses: ./.github/workflows/reusable-workflow.yml
       with:
         environment: development
         image_tag: ${{ github.sha }}
@@ -83,7 +83,7 @@ jobs:
     deploy-prod:
       needs: [unit-testing, code-coverage]
       if: github.ref == 'refs/heads/main'
-      uses: ./.github/workflows/reusable-k8s-deploy.yml
+      uses: ./.github/workflows/reusable-workflow.yml
       with:
         environment: production
         image_tag: ${{ github.sha }}
